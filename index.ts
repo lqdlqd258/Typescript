@@ -242,18 +242,18 @@
 // interface ConfigFn{
 //     <T>(value:T):T
 // }
-// let getdata:ConfigFn = function<T>(value:T):T{
+// let getDate:ConfigFn = function<T>(value:T):T{
 //     return value;
 // }
-// console.log(getdata<number>(123))
+// console.log(getDate<number>(123))
 //第二种
 // interface ConfigFn<T>{
 //     (value:T):T
 // }
-// let getdata:ConfigFn<string> = function<T>(value:T):T{
+// let getDate:ConfigFn<string> = function<T>(value:T):T{
 //     return value;
 // }
-// console.log(getdata('ljc'))
+// console.log(getDate('ljc'))
 //#endregion
 
 //#region  把类当作参数，传入泛型类
@@ -284,6 +284,7 @@
 //#endregion
 
 //#region  泛型实战
+//解决方案：（约束统一的规范，以及代码复用）需要规范所以要定义接口，需要代码重用所以用到泛型
 //1.接口：面向对象的编程中，接口是 一种规范定义 ，它定于了行为和规范；
 //2.泛型：通俗理解：泛型就是解决 类，接口，方法的复用性
 // interface DBI<T>{
@@ -356,14 +357,249 @@
 
 // // MySql.add({username:'123',password:'321'});
 // MySql.add(u);
+
 // // 获取User表，ID=4的数据
 // let data = MySql.get(4);
 // console.log(data);
 //#endregion
 
 //#region  模块和模块化
-import {getData,save,DBUrl as data} from './modules/db' 
-getData();
-save();
-console.log(data);
+// import {getDate,save,DBUrl as data} from './modules/db' 
+// getDate();
+// save();
+// console.log(data);
+//#endregion
+
+//#region  运用模块化进行 泛型实战封装
+//先调用mysqlDB库
+// import {UserClass,UserModel} from './model/user';
+
+// let u = new UserClass();
+// u.username = '张三'
+// u.password = '123456';
+// UserModel.add(u);
+
+// let res = UserModel.get(321);
+// console.log(res);
+//#endregion
+
+//#region  命名空间 (主要用于组织代码，避免命名冲突)
+// namespace A{
+//     interface Animal{
+//         name:string;
+//         eat(str:string):void;
+//     }
+//     export class Dog implements Animal{
+//         name:string;
+//         constructor(name:string){
+//             this.name = name;
+//         }
+//         eat(){
+//             console.log(this.name+`吃粮食`);
+//         }
+//     }
+// }
+// let a = new A.Dog('小狗');
+// a.eat();
+// namespace B{
+//     interface Animal{
+//         name:string;
+//         eat(str:string):void;
+//     }
+//     export class Dog implements Animal{
+//         name:string;
+//         constructor(name:string){
+//             this.name = name;
+//         }
+//         eat(){
+//             console.log(this.name+`吃粮食`);
+//         }
+//     }
+// }
+// let b = new B.Dog('小花');
+// b.eat();
+//#endregion
+
+//#region  命名空间 模块化封装
+// import A from './namespace/a'
+// let a = new A.Dog('小狼狗');
+// a.eat();
+//#endregion
+
+//#region  装饰器(类装饰器)
+//普通装饰器 (类装饰器)
+// function logClass(params:any){
+//     //params就是当前类
+//     console.log(params);
+//     params.prototype.apiUrl = '动态扩展的属性';
+//     params.prototype.run = function(){
+//         console.log(`这是run方法`);
+//     }
+// }
+// @logClass
+// class HttpClient{
+//     constructor(){
+
+//     }
+//     getDate(){
+
+//     }
+// }
+// let a:any = new HttpClient();
+// console.log(a.apiUrl);
+// a.run()
+
+//装饰器工厂 (类装饰器)
+// function logClass1(params:string){
+//     // console.log(params);
+//     return function(target:any){
+//         //这是当前类
+//         // console.log(target);
+//         target.prototype.apiUrl = params;
+//     }
+// }
+// //会自动执行
+// @logClass1('http://www.baidu.com')
+// class HttpClient1{
+//     constructor(){
+
+//     }
+//     getDate(){
+
+//     }
+// }
+// let a:any = new HttpClient1();
+// console.log(a.apiUrl);
+//#endregion
+
+//#region  类装饰器 重载构造函数例子
+// function logClass(target:any){
+//     //params就是当前类
+//     console.log(target);
+//     return class extends target{
+//         apiUrl:string | undefined;
+//         constructor(){
+//             super()
+//             this.apiUrl = '321'
+//         }
+//         getDate(){
+
+//         }
+//     }
+  
+// }
+// @logClass
+// class HttpClient{
+//     apiUrl:string | undefined;
+//     constructor(){
+//         this.apiUrl = 'www.baidu.com'
+//     }
+//     getDate(){
+
+//     }
+// }
+// let a:any = new HttpClient();
+// console.log(a.apiUrl);
+//#endregion
+
+//#region  属性装饰器
+// function logProperty(params:any){
+    
+//     return function(target:any,attr:any){
+//         console.log(target);
+//         console.log(attr);
+//         target[attr] = params;
+//     }
+  
+// }
+// class HttpClient{
+//     @logProperty('3333')
+//     apiUrl:string | undefined;
+//     constructor(){
+//     }
+//     getDate(){
+
+//     }
+// }
+// let a:any = new HttpClient();
+// console.log(a.apiUrl);
+//#endregion
+
+//#region  方法装饰器
+
+//方法装饰器一 (增加属性和方法)
+// function logClass(params:string){
+
+//     return function(target:any,methodName:any,desc:any){
+//         target.url = 'www.ljc.com';
+//         target.run = function(){
+//             console.log('run方法');
+//         }
+//     }
+// }
+// class HttpClient{
+//     public url:string | undefined;
+//     constructor(){
+//         // this.url = 'www.baidu.com'
+//     }
+//     @logClass('www')
+//     getDate(){
+//         console.log(this.url);
+//     }
+// }
+// let a:any = new HttpClient()
+// console.log(a.url);
+// a.run();
+
+//方法装饰器二 (修改方法)
+// function logClass(params:string){
+
+//     return function(target:any,methodName:any,desc:any){
+//         // console.log(target,methodName,desc);
+//         // console.log(methodName);
+//         // console.log(desc);
+//         //1.保存当前方法
+//         let oMethod = desc.value;
+//         desc.value = function(...args:any[]){
+//             args = args.map((value)=>{
+//                 return String(value);
+//             })
+//             console.log(args);
+//             oMethod.apply(this,args);
+//         }
+//     }
+// }
+// class HttpClient{
+//     public url:string | undefined;
+//     constructor(){
+//         // this.url = 'www.baidu.com'
+//     }
+//     @logClass('www')
+//     getDate(...args:any[]){
+//         console.log(args);
+//         console.log('我是getDate方法');
+//     }
+// }
+// let a:any = new HttpClient()
+// a.getDate([13,'hello']);
+//#endregion
+
+//#region  方法参数装饰器
+// function logClass(params:string){
+
+//     return function(target:any,methodName:any,paramsIndex:any){
+//         console.log(params);
+//         console.log(target);
+//         console.log(methodName);
+//         console.log(paramsIndex);
+//     }
+// }
+// class HttpClient{
+//     public url:string | undefined;
+//     constructor(){
+//     }
+//     getDate(@logClass('xxxx') uuid:string){
+//         console.log('这是getDate');
+//     }
+// }
 //#endregion
